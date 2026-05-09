@@ -128,7 +128,19 @@
     </target>
 
     <!-- MUSIC -->
-    <target name="music" depends="build">
+    <target name="music">
+        <trycatch property="error.occurred">
+            <try>
+                <antcall target="build"/>
+            </try>
+            <finally>
+                <antcall target="result-soundtrack"/>
+            </finally>
+        </trycatch>
+    </target>
+
+    <!-- RESULT SOUNDTRACK -->
+    <target name="result-soundtrack">
         <condition
                 property="music"
                 value="${music.failure.file}"
@@ -214,12 +226,11 @@
         <trycatch property="error.occurred">
             <try>
                 <antcall target="clean"/>
-                <antcall target="build"/>
                 <antcall target="test"/>
                 <antcall target="diff"/>
             </try>
             <finally>
-                <antcall target="music"/>
+                <antcall target="result-soundtrack"/>
             </finally>
         </trycatch>
     </target>
