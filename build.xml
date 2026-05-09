@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="Lab3Ant" default="all">
+
+    <!-- properties -->
+    <property file="build.properties"/>
+
+    <!-- classpath -->
+    <path id="project.classpath">
+
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+
+    </path>
+
+    <!-- CLEAN -->
+    <target name="clean">
+
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+
+    </target>
+
+    <!-- COMPILE -->
+    <target name="compile">
+
+        <mkdir dir="${classes.dir}"/>
+
+        <javac
+                srcdir="${src.dir}"
+                destdir="${classes.dir}"
+                includeantruntime="false"
+                fork="true"
+                source="17"
+                target="17"
+                encoding="UTF-8">
+
+            <classpath refid="project.classpath"/>
+
+        </javac>
+
+        <!-- copy resources -->
+        <copy todir="${classes.dir}">
+
+            <fileset dir="${resources.dir}"/>
+
+        </copy>
+
+    </target>
+
+    <!-- BUILD -->
+    <target name="build" depends="compile">
+
+        <mkdir dir="${dist.dir}"/>
+
+        <war
+                destfile="${dist.dir}/${war.name}"
+                webxml="${web.dir}/WEB-INF/web.xml"
+                manifest="${manifest.file}">
+
+            <!-- web resources -->
+            <fileset dir="${web.dir}"/>
+
+            <!-- compiled classes -->
+            <classes dir="${classes.dir}"/>
+
+            <!-- libraries -->
+            <lib dir="${lib.dir}"/>
+
+        </war>
+
+    </target>
+
+    <!-- TEST -->
+    <target name="test" depends="build">
+
+        <mkdir dir="${test.classes.dir}"/>
+        <mkdir dir="${build.dir}/test-reports"/>
+
+        <!-- compile tests -->
+        <javac
+                srcdir="${test.dir}"
+                destdir="${test.classes.dir}"
+                includeantruntime="false">
+
+            <classpath>
+
+                <path refid="project.classpath"/>
+
+                <pathelement path="${classes.dir}"/>
+
+            </classpath>
+
+        </javac>
+
+        <!-- run tests -->
+        <junit printsummary="yes"
+               haltonfailure="no">
+
+            <classpath>
+
+                <path refid="project.classpath"/>
+
+                <pathelement path="${classes.dir}"/>
+
+                <pathelement path="${test.classes.dir}"/>
+
+            </classpath>
+
+            <formatter type="plain" usefile="true"/>
+
+            <batchtest todir="${build.dir}/test-reports">
+                <fileset dir="${test.classes.dir}">
+                    <include name="**/*Test.class"/>
+                </fileset>
+            </batchtest>
+
+        </junit>
+
+    </target>
+
+    <!-- MUSIC -->
+    <target name="music" depends="build">
+        <echo message="Build finished successfully!"/>
+
+        <!-- Windows -->
+        <exec executable="cmd" osfamily="windows" spawn="true">
+            <arg value="/c"/>
+            <arg value="start"/>
+            <arg value=""/>
+            <arg value="${music.file}"/>
+        </exec>
+
+        <!-- macOS -->
+        <exec executable="open" osfamily="mac" spawn="true">
+            <arg value="${music.file}"/>
+        </exec>
+    </target>
+
+    <!-- DIFF -->
+    <target name="diff">
+
+        <exec executable="git"
+              outputproperty="git.diff">
+
+            <arg value="diff"/>
+            <arg value="--name-only"/>
+
+        </exec>
+
+        <echo message="${git.diff}"/>
+
+        <condition property="need.commit">
+
+            <or>
+
+                <contains string="${git.diff}"
+                          substring="PointResult.java"/>
+
+                <contains string="${git.diff}"
+                          substring="ResultsBean.java"/>
+
+            </or>
+
+        </condition>
+
+        <antcall target="git-commit"/>
+
+    </target>
+
+    <!-- GIT COMMIT -->
+    <target name="git-commit"
+            if="need.commit">
+
+        <exec executable="git">
+
+            <arg value="add"/>
+            <arg value="."/>
+
+        </exec>
+
+        <exec executable="git">
+
+            <arg value="commit"/>
+
+            <arg value="-m"/>
+
+            <arg value="Auto commit by Ant"/>
+
+        </exec>
+
+    </target>
+
+    <!--  RUN THE SCRIPT  -->
+    <target name="all"
+            depends="clean,build,test,music,diff"/>
+
+</project>
