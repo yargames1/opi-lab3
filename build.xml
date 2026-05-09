@@ -5,6 +5,13 @@
     <!-- properties -->
     <property file="build.properties"/>
 
+    <!--    try-catch ant lib-->
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+        <classpath>
+            <pathelement location="${lib.dir}/ant-contrib-1.0b3.jar"/>
+        </classpath>
+    </taskdef>
+
     <!-- classpath -->
     <path id="project.classpath">
 
@@ -96,7 +103,7 @@
 
         <!-- run tests -->
         <junit printsummary="yes"
-               haltonfailure="no">
+               haltonfailure="yes">
 
             <classpath>
 
@@ -122,19 +129,32 @@
 
     <!-- MUSIC -->
     <target name="music" depends="build">
-        <echo message="Build finished successfully!"/>
+        <condition
+                property="music"
+                value="${music.failure.file}"
+                else="${music.success.file}">
+            <isset property="error.occurred"/>
+        </condition>
+        <condition
+                property="message"
+                value="${message.failure.text}"
+                else="${message.success.text}">
+            <isset property="error.occurred"/>
+        </condition>
+
+        <echo message="${message}"/>
 
         <!-- Windows -->
         <exec executable="cmd" osfamily="windows" spawn="true">
             <arg value="/c"/>
             <arg value="start"/>
             <arg value=""/>
-            <arg value="${music.file}"/>
+            <arg value="src/test/assets/${music}"/>
         </exec>
 
         <!-- macOS -->
         <exec executable="afplay" osfamily="mac" spawn="true">
-            <arg value="${music.file}"/>
+            <arg value="src/test/assets/${music}"/>
         </exec>
     </target>
 
@@ -193,7 +213,18 @@
     </target>
 
     <!--  RUN THE SCRIPT  -->
-    <target name="all"
-            depends="clean,build,test,music,diff"/>
+    <target name="all">
+        <trycatch property="error.occurred">
+            <try>
+                <antcall target="clean"/>
+                <antcall target="build"/>
+                <antcall target="test"/>
+                <antcall target="diff"/>
+            </try>
+            <finally>
+                <antcall target="music"/>
+            </finally>
+        </trycatch>
+    </target>
 
 </project>
