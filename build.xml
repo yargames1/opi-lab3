@@ -133,7 +133,7 @@
         </exec>
 
         <!-- macOS -->
-        <exec executable="open" osfamily="mac" spawn="true">
+        <exec executable="afplay" osfamily="mac" spawn="true">
             <arg value="${music.file}"/>
         </exec>
     </target>
