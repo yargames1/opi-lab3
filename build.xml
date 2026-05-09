@@ -6,7 +6,7 @@
     <property file="build.properties"/>
 
     <!--    try-catch ant lib-->
-    <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
         <classpath>
             <pathelement location="${lib.dir}/ant-contrib-1.0b3.jar"/>
         </classpath>
@@ -171,19 +171,16 @@
 
         <echo message="${git.diff}"/>
 
-        <condition property="need.commit">
-
-            <or>
-
-                <contains string="${git.diff}"
-                          substring="PointResult.java"/>
-
-                <contains string="${git.diff}"
-                          substring="ResultsBean.java"/>
-
-            </or>
-
-        </condition>
+        <for list="${git.classes}" param="class.name" delimiter=",">
+            <sequential>
+                <if>
+                    <contains string="${git.diff}" substring="@{class.name}"/>
+                    <then>
+                        <property name="need.commit" value="true"/>
+                    </then>
+                </if>
+            </sequential>
+        </for>
 
         <antcall target="git-commit"/>
 
