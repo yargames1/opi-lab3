@@ -39,4 +39,8 @@ public class ResultsBean implements Serializable {
     public List<PointResult> getResults() {
         return results;
     }
+
+    public void setRepository(PointResultRepository repository) {
+        this.repository = repository;
+    }
 }
