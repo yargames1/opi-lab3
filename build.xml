@@ -115,8 +115,22 @@
         </trycatch>
     </target>
 
+    <!-- COMPILE SPLASH -->
+    <target name="compile-splash">
+        <mkdir dir="${test.classes.dir}"/>
+        <javac srcdir="${test.dir}"
+               destdir="${test.classes.dir}"
+               includeantruntime="false"
+               fork="true"
+               source="17"
+               target="17"
+               encoding="UTF-8">
+            <include name="org/example/misc/CenteredSplash.java"/>
+        </javac>
+    </target>
+
     <!-- SPLASH IMAGE -->
-    <target name="show-splash">
+    <target name="show-splash" depends="compile-splash">
         <condition
                 property="image"
                 value="${image.failure.file}"
@@ -130,7 +144,7 @@
             <isset property="error.occurred"/>
         </condition>
         <!-- Запускаем Java-программу для показа изображения -->
-        <java classname="org.example.misc.CenteredSplash" fork="true">
+        <java classname="org.example.misc.CenteredSplash" fork="true" spawn="true">
             <classpath location="build/test-classes"/>
             <arg value="src/test/assets/images/${image}"/>
             <arg value="--auto-close"/>
