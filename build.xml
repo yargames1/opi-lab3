@@ -14,26 +14,20 @@
 
     <!-- classpath -->
     <path id="project.classpath">
-
         <fileset dir="${lib.dir}">
             <include name="*.jar"/>
         </fileset>
-
     </path>
 
     <!-- CLEAN -->
     <target name="clean">
-
         <delete dir="${build.dir}"/>
         <delete dir="${dist.dir}"/>
-
     </target>
 
     <!-- COMPILE -->
     <target name="compile">
-
         <mkdir dir="${classes.dir}"/>
-
         <javac
                 srcdir="${src.dir}"
                 destdir="${classes.dir}"
@@ -42,25 +36,18 @@
                 source="17"
                 target="17"
                 encoding="UTF-8">
-
             <classpath refid="project.classpath"/>
-
         </javac>
 
         <!-- copy resources -->
         <copy todir="${classes.dir}">
-
             <fileset dir="${resources.dir}"/>
-
         </copy>
-
     </target>
 
     <!-- BUILD -->
     <target name="build" depends="compile">
-
         <mkdir dir="${dist.dir}"/>
-
         <war
                 destfile="${dist.dir}/${war.name}"
                 webxml="${web.dir}/WEB-INF/web.xml"
@@ -74,14 +61,11 @@
 
             <!-- libraries -->
             <lib dir="${lib.dir}"/>
-
         </war>
-
     </target>
 
     <!-- TEST -->
     <target name="test" depends="build">
-
         <mkdir dir="${test.classes.dir}"/>
         <mkdir dir="${build.dir}/test-reports"/>
 
@@ -113,9 +97,7 @@
                     <include name="**/*Test.class"/>
                 </fileset>
             </batchtest>
-
         </junit>
-
     </target>
 
     <!-- MUSIC -->
@@ -125,9 +107,35 @@
                 <antcall target="build"/>
             </try>
             <finally>
-                <antcall target="result-soundtrack"/>
+                <parallel>
+                    <antcall target="result-soundtrack"/>
+                    <antcall target="show-splash"/>
+                </parallel>
             </finally>
         </trycatch>
+    </target>
+
+    <!-- SPLASH IMAGE -->
+    <target name="show-splash">
+        <condition
+                property="image"
+                value="${image.failure.file}"
+                else="${image.success.file}">
+            <isset property="error.occurred"/>
+        </condition>
+        <condition
+                property="duration"
+                value="3000"
+                else="5000">
+            <isset property="error.occurred"/>
+        </condition>
+        <!-- Запускаем Java-программу для показа изображения -->
+        <java classname="org.example.misc.CenteredSplash" fork="true">
+            <classpath location="build/test-classes"/>
+            <arg value="src/test/assets/images/${image}"/>
+            <arg value="--auto-close"/>
+            <arg value="${duration}"/>
+        </java>
     </target>
 
     <!-- RESULT SOUNDTRACK -->
@@ -152,28 +160,23 @@
             <arg value="/c"/>
             <arg value="start"/>
             <arg value=""/>
-            <arg value="src/test/assets/${music}"/>
+            <arg value="src/test/assets/music/${music}"/>
         </exec>
 
         <!-- macOS -->
         <exec executable="afplay" osfamily="mac" spawn="true">
-            <arg value="src/test/assets/${music}"/>
+            <arg value="src/test/assets/music/${music}"/>
         </exec>
     </target>
 
     <!-- DIFF -->
     <target name="diff">
-
         <exec executable="git"
               outputproperty="git.diff">
-
             <arg value="diff"/>
             <arg value="--name-only"/>
-
         </exec>
-
         <echo message="${git.diff}"/>
-
         <for list="${git.classes}" param="class.name" delimiter=",">
             <sequential>
                 <if>
@@ -184,37 +187,26 @@
                 </if>
             </sequential>
         </for>
-
         <if>
             <isset property="need.commit"/>
             <then>
                 <antcall target="git-commit"/>
             </then>
         </if>
-
     </target>
 
     <!-- GIT COMMIT -->
     <target name="git-commit"
             if="need.commit">
-
         <exec executable="git">
-
             <arg value="add"/>
             <arg value="."/>
-
         </exec>
-
         <exec executable="git">
-
             <arg value="commit"/>
-
             <arg value="-m"/>
-
             <arg value="Auto commit by Ant"/>
-
         </exec>
-
     </target>
 
     <!--  RUN THE SCRIPT  -->
@@ -226,9 +218,11 @@
                 <antcall target="diff"/>
             </try>
             <finally>
-                <antcall target="result-soundtrack"/>
+                <parallel>
+                    <antcall target="result-soundtrack"/>
+                    <antcall target="show-splash"/>
+                </parallel>
             </finally>
         </trycatch>
     </target>
-
 </project>
