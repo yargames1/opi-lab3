@@ -8,6 +8,7 @@ import org.junit.Test;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +49,6 @@ public class PointResultRepositoryTest {
         emField.set(repo, mockEm);
     }
 
-
     @Test
     public void testFindAllEmpty() {
         List<PointResult> results = repo.findAll();
@@ -58,7 +58,7 @@ public class PointResultRepositoryTest {
     @Test
     public void testSaveAndFindAll() {
         PointResult result = new PointResult(1.0, 1.0, 1.0, true,
-                java.time.LocalDateTime.now(), 5.0);
+                LocalDateTime.now(), 5.0);
         repo.save(result);
         List<PointResult> results = repo.findAll();
         assertEquals(1, results.size());
@@ -68,7 +68,7 @@ public class PointResultRepositoryTest {
     @Test
     public void testDeleteAll() {
         repo.save(new PointResult(1.0, 1.0, 1.0, true,
-                java.time.LocalDateTime.now(), 5.0));
+                LocalDateTime.now(), 5.0));
         repo.deleteAll();
         List<PointResult> results = repo.findAll();
         assertEquals(0, results.size());

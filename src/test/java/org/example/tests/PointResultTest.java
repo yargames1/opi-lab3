@@ -8,10 +8,10 @@ import java.time.LocalDateTime;
 import static org.junit.Assert.*;
 
 public class PointResultTest {
+    private LocalDateTime now = LocalDateTime.now();
 
     @Test
     public void testFullConstructor() {
-        LocalDateTime now = LocalDateTime.now();
         PointResult result = new PointResult(1.0, 2.0, 3.0, true, now, 10.0);
 
         assertEquals(Double.valueOf(1.0), result.getX());
@@ -25,7 +25,6 @@ public class PointResultTest {
     @Test
     public void testSettersAndGetters() {
         PointResult result = new PointResult();
-        LocalDateTime now = LocalDateTime.now();
 
         result.setX(5.0);
         result.setY(6.0);

@@ -11,7 +11,7 @@ public class ClockPushBeanTest {
     private final ClockPushBean bean = new ClockPushBean();
 
     @Test
-    public void setUp() {
+    public void InitAndDestroy() {
         try {
             bean.init();
             assertNotNull("Scheduler должен быть запущен", bean);

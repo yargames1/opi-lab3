@@ -6,44 +6,38 @@ import org.example.beans.PointResultRepository;
 import org.example.beans.ResultsBean;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.Field;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 
 public class PointBeanTest {
     private PointBean pointBean;
     private ResultsBean resultsBean;
 
     @Before
-    public void setUp() {
+    public void setUp() throws NoSuchFieldException, IllegalAccessException {
         pointBean = new PointBean();
         resultsBean = new ResultsBean();
 
+        PointResultRepository repository = Mockito.mock(PointResultRepository.class);
+
+        // Настройка save
+        doAnswer(invocation -> {
+            PointResult point = invocation.getArgument(0);
+            point.setId(1L);
+            return point;
+        }).when(repository).save(any(PointResult.class));
+
+        Field field = ResultsBean.class.getDeclaredField("repository");
+        field.setAccessible(true);
+        field.set(resultsBean, repository);
+
         resultsBean.init();
-        resultsBean.setRepository(new PointResultRepository() {
-            private final List<PointResult> storage = new ArrayList<>();
-
-            @Override
-            public PointResult save(PointResult result) {
-                result.setId((long) storage.size() + 1);
-                storage.add(result);
-                return result;
-            }
-
-            @Override
-            public List<PointResult> findAll() {
-                return new ArrayList<>(storage);
-            }
-
-            @Override
-            public void deleteAll() {
-                storage.clear();
-            }
-        });
-
         resultsBean.getResults().clear();
         pointBean.setResultsBean(resultsBean);
     }
